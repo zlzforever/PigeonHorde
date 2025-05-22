@@ -10,12 +10,4 @@ public static class Connector
     {
         Redis = new RedisClient(connectionStringBuilder);
     }
-
-    public static void Load()
-    {
-        var password = Environment.GetEnvironmentVariable("PIGEON_HORDE_PASSWORD");
-        var connectionStringBuilder =
-            ConnectionStringBuilder.Parse($"127.0.0.1:6379,password={password},defaultDatabase=0");
-        Redis = new RedisClient(connectionStringBuilder);
-    }
 }

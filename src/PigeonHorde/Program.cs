@@ -24,7 +24,7 @@ public class Program
                           """);
         var builder = WebApplication.CreateBuilder(args);
         builder.WebHost.UseUrls("http://+:8500");
-        
+
         builder.Configuration.AddEnvironmentVariables("PIGEON_HORDE_");
         builder.Services.AddHostedService<HealthCheckBackgroundService>();
         builder.Services.AddHttpClient();
@@ -49,14 +49,15 @@ public class Program
         app.UseResponseCaching();
         app.UseResponseCompression();
 
-        if (app.Environment.IsDevelopment())
+        var redisUrl = Environment.GetEnvironmentVariable("PIGEON_HORDE_REDIS_URL");
+        if (string.IsNullOrEmpty(redisUrl))
         {
             var connectionStringBuilder = app.Configuration.GetSection("Redis").Get<ConnectionStringBuilder>();
             Connector.Load(connectionStringBuilder);
         }
         else
         {
-            Connector.Load();
+            Connector.Load(ConnectionStringBuilder.Parse(redisUrl));
         }
 
         app.MapGet("/v1/stats", async context =>
@@ -110,7 +111,8 @@ public class Program
                     var dto = AgentListServicesItemDto.From(service);
                     context.Response.StatusCode = 200;
                     context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsync(JsonSerializer.Serialize(dto, jsonOptions.Value.JsonSerializerOptions));
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(dto,
+                        jsonOptions.Value.JsonSerializerOptions));
                 }
             });
 
