@@ -12,7 +12,6 @@ RUN cd src/PigeonHorde && dotnet publish -r linux-x64 -p:PublishSingleFile=true 
 FROM base AS final
 WORKDIR /app
 
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 COPY --from=build /out .
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
