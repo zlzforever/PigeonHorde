@@ -58,7 +58,7 @@ public class HealthCheckBackgroundService(
                     await Task.Delay(1000);
                 }
 
-                if (i % 10 == 0)
+                if (i % 60 == 0)
                 {
                     _logger.LogInformation("Health check service is running， task count {PendingTimeouts}",
                         HashedWheelTimer.PendingTimeouts);
