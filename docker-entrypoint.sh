@@ -1,4 +1,5 @@
 #!/bin/bash
 
-dotnet /pigeonhorde/PigeonHorde.dll &
-/app/GarnetServer --protected-mode no $@
+/app/GarnetServer --protected-mode no $@ &
+sleep 3
+dotnet /pigeonhorde/PigeonHorde.dll
