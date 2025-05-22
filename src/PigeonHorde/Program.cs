@@ -4,8 +4,6 @@ using System.Text.Json;
 using FreeRedis;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 using PigeonHorde.Dto;
 using PigeonHorde.Model;
 
@@ -13,13 +11,13 @@ namespace PigeonHorde;
 
 public class Program
 {
-    public static async Task Main(string[] args)
+    public static void Main(string[] args)
     {
         Console.WriteLine("""
 
                             _                          
                            /_/._  _  _  _  /_/_  _ _/_ 
-                          /  //_//_'/_// // //_///_//_'
+                          /  //_//_'/_// // //_///_//_' v0.0.9
                               _/                       
 
                           """);
@@ -47,7 +45,6 @@ public class Program
         app.UseResponseCaching();
         app.UseResponseCompression();
 
-
         if (app.Environment.IsDevelopment())
         {
             var connectionStringBuilder = app.Configuration.GetSection("Redis").Get<ConnectionStringBuilder>();
@@ -55,9 +52,8 @@ public class Program
         }
         else
         {
-            Connector.Load( );
+            Connector.Load();
         }
-       
 
         app.MapGet("/v1/stats", async context =>
         {
@@ -176,7 +172,8 @@ public class Program
 
         Repositry.LoadEvents();
 
-        await app.RunAsync();
+        app.Run();
         Console.WriteLine("Bye!");
+        Environment.Exit(0);
     }
 }
