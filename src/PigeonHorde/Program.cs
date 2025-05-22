@@ -4,6 +4,7 @@ using System.Text.Json;
 using FreeRedis;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.Options;
 using PigeonHorde.Dto;
 using PigeonHorde.Model;
 
@@ -41,6 +42,8 @@ public class Program
         });
 
         var app = builder.Build();
+
+        var jsonOptions = app.Services.GetRequiredService<IOptions<JsonOptions>>();
 
         app.UseResponseCaching();
         app.UseResponseCompression();
@@ -106,7 +109,7 @@ public class Program
                     var dto = AgentListServicesItemDto.From(service);
                     context.Response.StatusCode = 200;
                     context.Response.ContentType = "application/json";
-                    await context.Response.WriteAsync(JsonSerializer.Serialize(dto, JsonSerializerOptions.Web));
+                    await context.Response.WriteAsync(JsonSerializer.Serialize(dto, jsonOptions.Value.JsonSerializerOptions));
                 }
             });
 
