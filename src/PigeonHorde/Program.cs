@@ -47,11 +47,18 @@ public class Program
         app.UseResponseCaching();
         app.UseResponseCompression();
 
-        var connectionStringBuilder = app.Configuration.GetSection("Redis").Get<ConnectionStringBuilder>();
-        Connector.Load(connectionStringBuilder);
 
-        var jsonSerializerOptions =
-            app.Services.GetRequiredService<IOptions<JsonOptions>>().Value.JsonSerializerOptions;
+        if (app.Environment.IsDevelopment())
+        {
+            var connectionStringBuilder = app.Configuration.GetSection("Redis").Get<ConnectionStringBuilder>();
+            Connector.Load(connectionStringBuilder);
+        }
+        else
+        {
+            Connector.Load( );
+        }
+       
+
         app.MapGet("/v1/stats", async context =>
         {
             context.Response.ContentType = "text/plain";

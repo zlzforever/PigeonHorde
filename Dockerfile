@@ -1,19 +1,15 @@
 # First stage: restore
 FROM fallenwood/garnet:20250522.1 AS base
-WORKDIR /app
+WORKDIR /pigeonhorde
 ENV LANG zh_CN.UTF-8
 
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY . .
 RUN dotnet restore
-RUN cd src/PigeonHorde && dotnet publish -r linux-x64 -p:PublishSingleFile=true --self-contained true -o /out && rm /out/PigeonHorde/PigeonHorde.staticwebassets.endpoints.json
+RUN cd src/PigeonHorde && dotnet publish -c Release -r linux-x64 -f net8.0 --self-contained false -o /pigeonhorde && rm -f /pigeonhorde/appsettings.Development.json
 
 FROM base AS final
-WORKDIR /app
-
-COPY --from=build /out .
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["/app/PigeonHorde"]
+WORKDIR /pigeonhorde
+COPY --from=build /pigeonhorde .
+CMD ["/pigeonhorde/PigeonHorde"]
