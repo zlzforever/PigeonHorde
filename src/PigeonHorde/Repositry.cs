@@ -165,7 +165,7 @@ internal static class Repositry
         }
     }
 
-    public static IEnumerable<HealthData> GetCheckList(params string[] checkIdList)
+    public static IEnumerable<HealthData> GetCheckList(string[] checkIdList)
     {
         var items = Connector.Redis.HMGet(ServiceHealthCheckKey, checkIdList);
         var result = items.Select(x => JsonSerializer.Deserialize<HealthData>(x));
