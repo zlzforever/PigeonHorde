@@ -1,0 +1,29 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: daprConfig
+spec:
+  nameResolution:
+    component: 'consul'
+    configuration:
+      client:
+        address: '127.0.01:8500'
+      selfRegister: false
+      queryOptions:
+        useCache: true
+      daprPortMetaKey: 'DAPR_PORT'
+      advancedRegistration:
+        id: '${APP_ID}_${HOST_IP}'
+        name: '${APP_ID}'
+        port: ${DAPR_HTTP_PORT}
+        address: '${HOST_IP}'
+        check:
+          name: 'Dapr Health Status'
+          checkID: 'daprHealth:${APP_ID}:${HOST_IP}'
+          interval: '5s'
+          http: 'http://${HOST_IP}:${DAPR_HTTP_PORT}/v1.0/healthz'
+        meta:
+          DAPR_METRICS_PORT: '${DAPR_METRICS_PORT}'
+          DAPR_PROFILE_PORT: '${DAPR_PROFILE_PORT}'
+        tags:
+          - 'dapr'      
