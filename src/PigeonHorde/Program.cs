@@ -23,7 +23,8 @@ public class Program
 
                           """);
         var builder = WebApplication.CreateBuilder(args);
-
+        builder.WebHost.UseUrls("http://+:8500");
+        
         builder.Configuration.AddEnvironmentVariables("PIGEON_HORDE_");
         builder.Services.AddHostedService<HealthCheckBackgroundService>();
         builder.Services.AddHttpClient();
