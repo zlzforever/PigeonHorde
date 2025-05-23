@@ -11,7 +11,8 @@ public class HealthService(HttpContext httpContext)
     /// 
     /// </summary>
     /// <param name="serviceName"></param>
-    public List<HealthListServiceInstancesDto> Get(string serviceName)
+    /// <param name="passing"></param>
+    public List<HealthListServiceInstancesDto> Get(string serviceName, bool passing)
     {
         var services = Repositry.GetList(serviceName);
         var result = new List<HealthListServiceInstancesDto>();
@@ -24,19 +25,29 @@ public class HealthService(HttpContext httpContext)
             var serviceDto = HealthListServiceInstancesDto.ServiceDto.From(item);
 
             var healths = new List<HealthListServiceInstancesDto.CheckDto>();
+            var success = true;
             foreach (var check in item.GetAllCheck())
             {
                 if (healthDataDict.TryGetValue(check.CheckId, out var value))
                 {
+                    if (passing && !"passing".Equals(value.Status, StringComparison.InvariantCulture))
+                    {
+                        success = false;
+                        break;
+                    }
+
                     healths.Add(HealthListServiceInstancesDto.CheckDto.From(value));
                 }
             }
 
-            result.Add(new HealthListServiceInstancesDto
+            if (success)
             {
-                Service = serviceDto,
-                Checks = healths
-            });
+                result.Add(new HealthListServiceInstancesDto
+                {
+                    Service = serviceDto,
+                    Checks = healths
+                });
+            }
         }
 
         _logger.LogDebug("Query service health: {ServiceName}", serviceName);

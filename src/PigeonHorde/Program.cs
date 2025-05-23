@@ -123,7 +123,7 @@ public class Program
             });
 
         app.MapGet("v1/health/service/{serviceName}",
-            ([FromRoute, StringLength(254)] string serviceName, HttpContext context) =>
+            ([FromRoute, StringLength(254)] string serviceName, string passing, HttpContext context) =>
             {
                 // return memoryCache.GetOrCreate($"V1_HEALTH_SERVICE_{serviceName}", entry =>
                 // {
@@ -139,7 +139,8 @@ public class Program
                 // });
 
                 var healthService = new HealthService(context);
-                var services = healthService.Get(serviceName);
+                var services = healthService.Get(serviceName,
+                    "true".Equals(passing, StringComparison.OrdinalIgnoreCase));
 
                 // entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(5);
                 // entry.SlidingExpiration = TimeSpan.FromSeconds(5);
@@ -149,38 +150,38 @@ public class Program
                 return services;
             });
 
-        app.MapPost("v1/data/load", async () =>
-        {
-            for (var i = 0; i < 500; i++)
-            {
-                var body = $$"""
-                             {
-                                 "ID": "test-api_{{i}}",
-                                 "Name": "test-api-{{i}}",
-                                 "Tags": [
-                                     "dapr"
-                                 ],
-                                 "Port": {{i}},
-                                 "Address": "255.255.255.{{i}}",
-                                 "Meta": {
-                                     "DAPR_METRICS_PORT": "51780",
-                                     "DAPR_PORT": "51781",
-                                     "DAPR_PROFILE_PORT": "-1"
-                                 },
-                                 "Check": {
-                                     "CheckID": "daprHealth:test-api:{{i}}",
-                                     "Name": "Dapr Health Status",
-                                     "Interval": "5s",
-                                     "HTTP": "http://127.0.0.1:8500/v1/health/service/test-api"
-                                 },
-                                 "Checks": null
-                             }
-                             """;
-                var service = JsonSerializer.Deserialize<Service>(body);
-                service.Initialize();
-                await Repositry.Add(service);
-            }
-        });
+//         app.MapPost("v1/data/load", async () =>
+//         {
+//             for (var i = 0; i < 500; i++)
+//             {
+//                 var body = $$"""
+//                              {
+//                                  "ID": "test-api_{{i}}",
+//                                  "Name": "test-api-{{i}}",
+//                                  "Tags": [
+//                                      "dapr"
+//                                  ],
+//                                  "Port": {{i}},
+//                                  "Address": "255.255.255.{{i}}",
+//                                  "Meta": {
+//                                      "DAPR_METRICS_PORT": "51780",
+//                                      "DAPR_PORT": "51781",
+//                                      "DAPR_PROFILE_PORT": "-1"
+//                                  },
+//                                  "Check": {
+//                                      "CheckID": "daprHealth:test-api:{{i}}",
+//                                      "Name": "Dapr Health Status",
+//                                      "Interval": "5s",
+//                                      "HTTP": "http://127.0.0.1:8500/v1/health/service/test-api"
+//                                  },
+//                                  "Checks": null
+//                              }
+//                              """;
+//                 var service = JsonSerializer.Deserialize<Service>(body);
+//                 service.Initialize();
+//                 await Repositry.Add(service);
+//             }
+//         });
 
         Repositry.LoadEvents();
 
