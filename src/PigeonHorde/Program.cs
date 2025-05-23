@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Options;
 using PigeonHorde.Dto;
+using PigeonHorde.Logging;
 using PigeonHorde.Model;
 
 namespace PigeonHorde;
@@ -24,6 +25,11 @@ public class Program
                           """);
         var builder = WebApplication.CreateBuilder(args);
         builder.WebHost.UseUrls("http://+:8500");
+        builder.Logging.AddSimpleConsole(options =>
+        {
+            options.SingleLine = true;
+            options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
+        }).AddProvider(new FileLoggerProvider(new FileLoggerOutput("log.txt", 10)));
 
         builder.Configuration.AddEnvironmentVariables("PIGEON_HORDE_");
         builder.Services.AddHostedService<HealthCheckBackgroundService>();

@@ -39,7 +39,7 @@ public class HealthService(HttpContext httpContext)
             });
         }
 
-        _logger.LogInformation("Query service health: {ServiceName}", serviceName);
+        _logger.LogDebug("Query service health: {ServiceName}", serviceName);
         return result;
     }
 }
