@@ -18,9 +18,9 @@ public class Program
 
                             _                          
                            /_/._  _  _  _  /_/_  _ _/_ 
-                          /  //_//_'/_// // //_///_//_' v0.0.9
-                              _/                       
-
+                          /  //_//_'/_// // //_///_//_' PigeonHorde 0.0.9 64 bit;
+                              _/                        Listening on: 0.0.0.0:8500
+                                                        https://github.com/zlzforever/PigeonHorde
                           """);
         var builder = WebApplication.CreateBuilder(args);
         builder.WebHost.UseUrls("http://+:8500");

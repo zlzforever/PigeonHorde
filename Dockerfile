@@ -1,4 +1,4 @@
-FROM docker.xuanyuan.me/fallenwood/garnet:20250522.1 AS base
+FROM fallenwood/garnet:20250522.1 AS base
 WORKDIR /pigeonhorde
 
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
