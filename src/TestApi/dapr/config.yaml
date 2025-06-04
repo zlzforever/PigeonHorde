@@ -20,7 +20,7 @@ spec:
         check:
           name: 'Dapr Health Status'
           checkID: 'daprHealth:${APP_ID}:${HOST_IP}'
-          interval: '5s'
+          interval: '10s'
           http: 'http://${HOST_IP}:${DAPR_HTTP_PORT}/v1.0/healthz'
         meta:
           DAPR_METRICS_PORT: '${DAPR_METRICS_PORT}'

@@ -3,17 +3,18 @@
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Version>0.0.9</Version>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FreeRedis" Version="1.3.7" />
-        <PackageReference Include="HashedWheelTimer.NET" Version="0.10.4" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5" />
+        <PackageReference Include="FreeRedis" Version="1.3.8" />
+        <PackageReference Include="HashedWheelTimer.NET" Version="0.10.4"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5"/>
     </ItemGroup>
 
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="out\appsettings.json" />
-      <_ContentIncludedByDefault Remove="out\PigeonHorde.staticwebassets.endpoints.json" />
+        <_ContentIncludedByDefault Remove="out\appsettings.json"/>
+        <_ContentIncludedByDefault Remove="out\PigeonHorde.staticwebassets.endpoints.json"/>
     </ItemGroup>
 
 </Project>

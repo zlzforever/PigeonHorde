@@ -4,7 +4,7 @@ using System.Text.Json;
 using HWT;
 using PigeonHorde.Model;
 
-namespace PigeonHorde;
+namespace PigeonHorde.Services;
 
 public class HealthCheckBackgroundService(
     IHttpClientFactory httpClientFactory,
@@ -40,7 +40,8 @@ public class HealthCheckBackgroundService(
             {
                 try
                 {
-                    var json = Connector.Redis.LPop(Repositry.ServiceRegisterEventKey);
+                    var json = Repository.PopServiceRegisterEvent();
+
                     if (string.IsNullOrEmpty(json))
                     {
                         i++;
@@ -53,14 +54,14 @@ public class HealthCheckBackgroundService(
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Health check service error");
+                    _logger.LogError(ex, "health check service error");
                     i++;
                     await Task.Delay(1000);
                 }
 
                 if (i % 300 == 0)
                 {
-                    _logger.LogInformation("Health check service is running， task count {PendingTimeouts}",
+                    _logger.LogInformation("health check service is running， task count is {PendingTimeouts}",
                         HashedWheelTimer.PendingTimeouts);
                 }
             }
@@ -69,7 +70,7 @@ public class HealthCheckBackgroundService(
 
     public override Task StopAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("Health check service is stopped");
+        _logger.LogInformation("health check service is stopped");
         return Task.CompletedTask;
     }
 
@@ -83,7 +84,7 @@ public class HealthCheckBackgroundService(
         {
             case OperateType.Register:
             {
-                var service = await Repositry.GetService(@event.Name, @event.Id);
+                var service = Repository.GetService(@event.Name, @event.Id);
                 if (service == null)
                 {
                     break;
@@ -176,9 +177,7 @@ public class HealthCheckBackgroundService(
             data.Output =
                 $"HTTP GET {Check.Http}: {(int)response.StatusCode} Content Output: {Encoding.UTF8.GetString(await response.Content.ReadAsByteArrayAsync())}";
 
-            // ReSharper disable once MethodHasAsyncOverload
-            Connector.Redis.HSet(Repositry.ServiceHealthCheckKey, Check.CheckId,
-                JsonSerializer.Serialize(data));
+            Repository.AddCheck(Check.CheckId, data);
 
             if (ServiceIdMapTasks.TryGetValue(ServiceId, out var dict))
             {

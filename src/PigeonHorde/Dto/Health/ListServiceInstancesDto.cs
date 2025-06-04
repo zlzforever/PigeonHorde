@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
 using PigeonHorde.Model;
 
-namespace PigeonHorde.Dto;
+namespace PigeonHorde.Dto.Health;
 
-public class HealthListServiceInstancesDto
+public class ListServiceInstancesDto
 {
     /// <summary>
     /// 

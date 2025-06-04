@@ -1,8 +1,9 @@
 using System.Text.Json.Serialization;
+using PigeonHorde.Model;
 
-namespace PigeonHorde.Model;
+namespace PigeonHorde.Dto.Agent;
 
-public class Service
+public class GetServiceConfigurationDto
 {
     /// <summary>
     /// Specifies a unique ID for this service.
@@ -18,7 +19,7 @@ public class Service
     /// Refer to the Internet Engineering Task Force's RFC 1123 for additional information.
     /// Service names that conform to standard usage ensures compatibility with external DNSs
     /// </summary>
-    [JsonPropertyName("Name")]
+    [JsonPropertyName("Service")]
     public string Name { get; set; }
 
     /// <summary>
@@ -110,61 +111,32 @@ public class Service
     /// </summary>
     [JsonPropertyName("Weights")]
     public Weights Weights { get; set; }
-    
+
     /// <summary>
     /// 
     /// </summary>
     [JsonPropertyName("ContentHash")]
     public string ContentHash { get; set; }
 
-    public IEnumerable<Check> GetAllCheck()
+    public static GetServiceConfigurationDto From(Service service)
     {
-        if (Checks != null)
+        return new GetServiceConfigurationDto
         {
-            foreach (var check in Checks)
-            {
-                yield return check;
-            }
-        }
-
-        if (Check != null)
-        {
-            yield return Check;
-        }
-    }
-
-    public void Initialize()
-    {
-        Weights ??= new Weights
-        {
-            Warning = 1, Passing = 1
+            Address = service.Address,
+            Id = service.Id,
+            Name = service.Name,
+            Tags = service.Tags,
+            Meta = service.Meta,
+            Port = service.Port,
+            TaggedAddresses = service.TaggedAddresses,
+            Kind = service.Kind,
+            Proxy = service.Proxy,
+            Connect = service.Connect,
+            Check = service.Check,
+            Checks = service.Checks,
+            EnableTagOverride = service.EnableTagOverride,
+            Weights = service.Weights,
+            ContentHash = service.ContentHash
         };
-
-        if (!string.IsNullOrEmpty(Address))
-        {
-            TaggedAddresses ??= new Dictionary<string, AddressInfo>
-            {
-                {
-                    "lan_ipv4", new AddressInfo
-                    {
-                        Address = Address,
-                        Port = Port
-                    }
-                },
-                {
-                    "wan_ipv4", new AddressInfo
-                    {
-                        Address = Address,
-                        Port = Port
-                    }
-                }
-            };
-        }
-
-        foreach (var check in GetAllCheck())
-        {
-            check.CheckId = string.IsNullOrEmpty(check.CheckId) ? Guid.NewGuid().ToString("N") : check.CheckId;
-            check.Name = string.IsNullOrEmpty(check.Name) ? "Service Health Status" : check.Name;
-        }
     }
 }

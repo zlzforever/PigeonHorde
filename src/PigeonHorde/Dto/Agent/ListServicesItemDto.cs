@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
 using PigeonHorde.Model;
 
-namespace PigeonHorde.Dto;
+namespace PigeonHorde.Dto.Agent;
 
-public class AgentListServicesItemDto
+public class ListServicesItemDto
 {
     /// <summary>
     /// 
@@ -65,9 +65,15 @@ public class AgentListServicesItemDto
     [JsonPropertyName("Datacenter")]
     public string Datacenter { get; set; }
 
-    public static AgentListServicesItemDto From(Service service)
+    /// <summary>
+    /// 
+    /// </summary>
+    [JsonPropertyName("ContentHash")]
+    public string ContentHash { get; set; }
+
+    public static ListServicesItemDto From(Service service)
     {
-        return new AgentListServicesItemDto
+        return new ListServicesItemDto
         {
             Id = service.Id,
             Name = service.Name,
@@ -78,7 +84,8 @@ public class AgentListServicesItemDto
             TaggedAddresses = service.TaggedAddresses,
             Weights = service.Weights,
             EnableTagOverride = service.EnableTagOverride,
-            Datacenter = "dc1"
+            Datacenter = Defaults.DataCenter,
+            ContentHash = service.ContentHash
         };
     }
 }

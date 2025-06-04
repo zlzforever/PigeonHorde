@@ -122,7 +122,7 @@ public class Check
         return new HealthData
         {
             Id = check.CheckId,
-            Node = "dc1",
+            Node = Defaults.DataCenter,
             CheckId = check.CheckId,
             Timeout = check.Timeout,
             Interval = check.Interval,

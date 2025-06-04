@@ -9,5 +9,6 @@ public static class Connector
     public static void Load(ConnectionStringBuilder connectionStringBuilder)
     {
         Redis = new RedisClient(connectionStringBuilder);
+        Redis.Info();
     }
 }
