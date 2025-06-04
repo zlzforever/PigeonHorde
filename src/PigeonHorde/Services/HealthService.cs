@@ -62,7 +62,7 @@ public class HealthService(HttpContext httpContext)
                     continue;
                 }
 
-                if (passing && !"passing".Equals(healthData.Status, StringComparison.InvariantCulture))
+                if (passing && !"passing".Equals(healthData.Status, StringComparison.OrdinalIgnoreCase))
                 {
                     success = false;
                     break;

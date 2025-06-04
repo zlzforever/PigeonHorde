@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using FreeRedis;
 using Microsoft.AspNetCore.ResponseCompression;
+using PigeonHorde.BackgroundService;
 using PigeonHorde.Controller;
 using PigeonHorde.Logging;
 using PigeonHorde.Model;
@@ -12,16 +13,24 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        Console.WriteLine("""
+        var port = Environment.GetEnvironmentVariable("PIGEON_HORDE_PORT");
+        port = string.IsNullOrWhiteSpace(port) ? "9500" : port;
+        if (!int.TryParse(port, out var portValue))
+        {
+            Console.WriteLine($"PORT {port} is not valid, using default port 9500 instead.");
+            portValue = 9500;
+        }
 
-                            _                          
-                           /_/._  _  _  _  /_/_  _ _/_ 
-                          /  //_//_'/_// // //_///_//_' PigeonHorde 0.0.9 64 bit;
-                              _/                        Listening on: 0.0.0.0:8500
-                                                        https://github.com/zlzforever/PigeonHorde
-                          """);
+        Console.WriteLine($"""
+
+                             _                          
+                            /_/._  _  _  _  /_/_  _ _/_ 
+                           /  //_//_'/_// // //_///_//_' PigeonHorde 0.0.9 64 bit;
+                               _/                        Listening on: 0.0.0.0:{portValue}
+                                                         https://github.com/zlzforever/PigeonHorde
+                           """);
         var builder = WebApplication.CreateBuilder(args);
-        builder.WebHost.UseUrls("http://0.0.0.0:8500");
+        builder.WebHost.UseUrls($"http://0.0.0.0:{portValue}");
         builder.Logging.AddSimpleConsole(options =>
         {
             options.SingleLine = true;
@@ -30,7 +39,7 @@ public class Program
             new FileLoggerProvider(new FileLoggerOutput(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "log.txt"),
                 10)));
         builder.Configuration.AddEnvironmentVariables("PIGEON_HORDE_");
-        builder.Services.AddHostedService<HealthCheckBackgroundService>();
+        builder.Services.AddHostedService<HealthCheckService>();
         builder.Services.AddHttpClient();
         builder.Services.AddMemoryCache();
         builder.Services.AddResponseCompression(options =>
@@ -65,17 +74,22 @@ public class Program
         new HealthController(app).Register();
         new TestController(app).Register();
 
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
         app.MapGet("/v1/stats", async context =>
         {
             context.Response.ContentType = "text/plain";
             context.Response.StatusCode = 200;
-            await context.Response.WriteAsync($"{Defaults.DataCenter} timestamp {DateTimeOffset.Now.ToLocalTime().ToUnixTimeSeconds()}");
+            await context.Response.WriteAsync(
+                $"{Defaults.DataCenter} timestamp {DateTimeOffset.Now.ToLocalTime():yyyy-MM-dd HH:mm:ss}");
         });
         app.MapGet("/healthx", async context =>
         {
             context.Response.ContentType = "text/plain";
             context.Response.StatusCode = 200;
-            await context.Response.WriteAsync($"{Defaults.DataCenter} timestamp {DateTimeOffset.Now.ToLocalTime().ToUnixTimeSeconds()}");
+            await context.Response.WriteAsync(
+                $"{Defaults.DataCenter} timestamp {DateTimeOffset.Now.ToLocalTime():yyyy-MM-dd HH:mm:ss}");
+            logger.LogDebug("Health check passed at {Time}",
+                DateTimeOffset.Now.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss"));
         });
 
         Repository.LoadEvents();
@@ -84,11 +98,18 @@ public class Program
         agentService.Register(new Service
         {
             Id = "PigeonHorde",
-            Name = "PigeonHorde Service",
+            Name = "PigeonHordeService",
             Tags = ["PigeonHorde", "Infra"],
             Address = "127.0.0.1",
             Port = 8500,
-            Meta = new Dictionary<string, string> { { "PORT", "8500" } }
+            Meta = new Dictionary<string, string> { { "PORT", "8500" } },
+            Check = new Check
+            {
+                CheckId = "PigeonHordeHealth:127.0.0.1",
+                Name = "PigeonHorde Health Status",
+                Interval = "10s",
+                Http = "http://127.0.0.1:8500/healthx"
+            }
         });
 
         app.Run();

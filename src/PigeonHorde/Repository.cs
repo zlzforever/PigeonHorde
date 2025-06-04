@@ -171,6 +171,11 @@ internal static class Repository
         var pipeline = Connector.Redis.StartPipe();
         foreach (var kv in serviceList)
         {
+            if (kv.Key == "PigeonHorde")
+            {
+                continue;
+            }
+
             pipeline.RPush(ServiceRegisterEventKey, JsonSerializer.Serialize(new ServiceChangedEvent
             {
                 Id = kv.Key,
