@@ -19,4 +19,4 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag zlzforever/pigeonhorde:20250501
     - name: Publish the Docker image
-      run: docker push zlzforever/pigeonhorde:20250501      
+      run: docker push zlzforever/pigeonhorde:20250729      
