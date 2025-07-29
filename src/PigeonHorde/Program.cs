@@ -11,7 +11,7 @@ namespace PigeonHorde;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var port = Environment.GetEnvironmentVariable("PIGEON_HORDE_PORT");
         port = string.IsNullOrWhiteSpace(port) ? "9500" : port;
@@ -29,6 +29,22 @@ public class Program
                                _/                        Listening on: 0.0.0.0:{portValue}
                                                          https://github.com/zlzforever/PigeonHorde
                            """);
+        var i = 0;
+        while (i < 30)
+        {
+            try
+            {
+                var info = Connector.Redis.Info();
+                Console.WriteLine(info);
+                break;
+            }
+            catch
+            {
+                i++;
+                await Task.Delay(1000);
+            }
+        }
+
         var builder = WebApplication.CreateBuilder(args);
         builder.WebHost.UseUrls($"http://0.0.0.0:{portValue}");
         builder.Logging.AddSimpleConsole(options =>
@@ -112,7 +128,7 @@ public class Program
             }
         });
 
-        app.Run();
+        await app.RunAsync();
         Console.WriteLine("Bye!");
 
 #if !DEBUG

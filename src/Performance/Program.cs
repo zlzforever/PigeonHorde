@@ -44,7 +44,7 @@ static class Program
         try
         {
             // 替换为实际的API地址
-            var apiUrl = "http://127.0.0.1:8500/v1/health/service/test-api";
+            var apiUrl = "http://192.168.100.254:8501/v1/health/service/PigeonHordeService";
 
             // 记录请求开始时间
             var requestStartTime = DateTime.Now;
