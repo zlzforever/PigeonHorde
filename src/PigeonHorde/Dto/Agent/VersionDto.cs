@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace PigeonHorde.Dto.Agent;
 

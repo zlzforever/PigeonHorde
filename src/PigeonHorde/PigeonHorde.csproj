@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Version>0.0.9</Version>
     </PropertyGroup>
@@ -11,10 +11,5 @@
         <PackageReference Include="HashedWheelTimer.NET" Version="0.10.4"/>
         <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5"/>
     </ItemGroup>
-
-    <ItemGroup>
-        <_ContentIncludedByDefault Remove="out\appsettings.json"/>
-        <_ContentIncludedByDefault Remove="out\PigeonHorde.staticwebassets.endpoints.json"/>
-    </ItemGroup>
-
+    
 </Project>

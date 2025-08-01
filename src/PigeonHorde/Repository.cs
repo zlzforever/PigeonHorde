@@ -49,7 +49,7 @@ internal static class Repository
         foreach (var check in service.GetAllCheck())
         {
             var healthData = check.CreateHealthData(service.Id, service.Name, service.Tags);
-            AddCheck(pipe, check.CheckId, healthData);
+            AddOrUpdateCheckData(pipe, check.CheckId, healthData);
         }
     }
 
@@ -68,13 +68,13 @@ internal static class Repository
         RemoveChecks(pipe, service.GetAllCheck());
     }
 
-    private static void AddCheck(RedisClient.PipelineHook pipe, string checkId,
+    private static void AddOrUpdateCheckData(RedisClient.PipelineHook pipe, string checkId,
         HealthData check)
     {
         pipe.HSet(ServiceHealthCheckKey, checkId, JsonSerializer.Serialize(check));
     }
 
-    public static void AddCheck(string checkId, HealthData check)
+    public static void AddOrUpdateCheckData(string checkId, HealthData check)
     {
         Connector.Redis.HSet(ServiceHealthCheckKey, checkId, JsonSerializer.Serialize(check));
     }

@@ -1,6 +1,5 @@
 using System.Text;
 using HWT;
-using PigeonHorde.Model;
 
 namespace PigeonHorde.BackgroundService;
 
@@ -10,10 +9,11 @@ public partial class HealthCheckService
     {
         private readonly ILogger<Http> _logger = _loggerFactory.CreateLogger<Http>();
 
-        public Check Check { get; set; }
-        public string ServiceId { get; set; }
-        public string ServiceName { get; set; }
-        public List<string> ServiceTags { get; set; }
+        public Model.Check Check { get; init; }
+        public string ServiceId { get; init; }
+        public string ServiceName { get; init; }
+        public List<string> ServiceTags { get; init; }
+        public int FailedTimes { get; init; }
 
         public override async Task RunAsync(ITimeout timeout)
         {
@@ -23,50 +23,63 @@ public partial class HealthCheckService
             }
 
             var httpClient = _httpClientFactory.CreateClient();
-            var data = Check.CreateHealthData(ServiceId, ServiceName, ServiceTags);
+            var checkResult = Check.CreateHealthData(ServiceId, ServiceName, ServiceTags);
 
             try
             {
                 using var response = await httpClient.GetAsync(Check.Http);
-                data.Status = response.IsSuccessStatusCode ? "passing" : "critical";
-                data.Output =
+                checkResult.Status = response.IsSuccessStatusCode ? "passing" : "critical";
+                checkResult.Output =
                     $"HTTP GET {Check.Http}: {(int)response.StatusCode} Content Output: {Encoding.UTF8.GetString(await response.Content.ReadAsByteArrayAsync())}";
             }
             catch (Exception e)
             {
-                data.Output =
+                checkResult.Output =
                     $"HTTP GET {Check.Http}: -1 Content Output: {e.Message}";
-                data.Status = "critical";
+                checkResult.Status = "critical";
             }
             finally
             {
-                Repository.AddCheck(Check.CheckId, data);
+                Repository.AddOrUpdateCheckData(Check.CheckId, checkResult);
 
                 if (ServiceIdMapTasks.TryGetValue(ServiceId, out var dict))
                 {
-                    var t = HashedWheelTimer.NewTimeout(Clone(), TimeSpan.FromSeconds(interval));
-                    dict[Check.CheckId] = t;
-
-                    if (data.Status != "passing")
+                    if (checkResult.Status != "passing")
                     {
+                        var failedTimes = FailedTimes + 1;
+                        // 如果连续失败超过 30 次，则不再继续检查
+                        if (FailedTimes < 30)
+                        {
+                            var hashedWheelTimeout = HashedWheelTimer.NewTimeout(
+                                Clone(failedTimes),
+                                TimeSpan.FromSeconds(interval));
+                            dict[Check.CheckId] = hashedWheelTimeout;
+                        }
+
                         _logger.LogWarning(
-                            "Id {ServiceId} service {ServiceName} checkId {CheckId} status {Status}",
-                            data.ServiceName, data.ServiceId, Check.CheckId, data.Status);
+                            "Id {ServiceId} service {ServiceName} checkId {CheckId} status {Status}, times: {FailedTimes}",
+                            checkResult.ServiceName, checkResult.ServiceId, Check.CheckId, checkResult.Status,
+                            FailedTimes);
                     }
                     else
                     {
+                        var hashedWheelTimeout = HashedWheelTimer.NewTimeout(
+                            Clone(0),
+                            TimeSpan.FromSeconds(interval));
+                        dict[Check.CheckId] = hashedWheelTimeout;
                         _logger.LogDebug(
                             "Id {ServiceId} service {ServiceName} checkId {CheckId} status {Status}",
-                            data.ServiceName, data.ServiceId, Check.CheckId, data.Status);
+                            checkResult.ServiceName, checkResult.ServiceId, Check.CheckId, checkResult.Status);
                     }
                 }
             }
         }
 
-        private Http Clone()
+        private Http Clone(int failedTimes)
         {
             return new Http(interval)
             {
+                FailedTimes = failedTimes,
                 Check = Check,
                 ServiceId = ServiceId,
                 ServiceName = ServiceName,
